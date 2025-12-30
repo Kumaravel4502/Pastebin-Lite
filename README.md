@@ -30,15 +30,13 @@ Pastebin-Lite is a full-stack web application built with Node.js/Express for the
 
 3. **Configure environment variables**
    
-   Create a `.env` file in the `Server` directory:
+   Create a `.env` file in the `Server` directory (optional):
    ```env
-   MONGO_URI=mongodb://localhost:27017/pastebin-lite
-   # Or use MongoDB Atlas:
-   # MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/pastebin-lite
-   
    PORT=5000
    PUBLIC_BASE_URL=http://localhost:5000
    ```
+   
+   Note: No database setup required - the app uses in-memory storage.
 
 4. **Start the server**
    ```bash
@@ -74,27 +72,24 @@ Pastebin-Lite is a full-stack web application built with Node.js/Express for the
 
 ## Persistence Layer
 
-**MongoDB** is used as the persistence layer. The application uses Mongoose ODM to interact with MongoDB.
+**In-Memory Storage** is used as the persistence layer. The application uses a simple Map-based storage system.
 
-### Database Schema
+### Storage Implementation
 
-- **Paste Model**: Stores paste content, expiry dates, view counts, and max view limits
-- **Counter Model**: Maintains an atomic counter for generating unique numeric paste IDs
+- **PasteStore**: In-memory Map that stores paste objects
+- **No database required**: All data is stored in memory during server runtime
+- **Automatic cleanup**: Expired pastes are checked on access
 
-### Why MongoDB?
+### Important Notes
 
-- **Serverless-friendly**: Works seamlessly with serverless platforms like Vercel
-- **No migrations required**: Schema is defined in code, no manual database setup needed
-- **Atomic operations**: Supports atomic updates for view counting and expiry checks
-- **Scalable**: Handles concurrent requests efficiently
+⚠️ **Limitations of In-Memory Storage:**
+- Data is lost when the server restarts
+- Not suitable for production or serverless environments
+- For production, consider using a persistent database (MongoDB, PostgreSQL, Redis, etc.)
 
-### Database Setup
+### For Production Deployment
 
-For local development, you can:
-- Install MongoDB locally and run it on the default port (27017)
-- Use MongoDB Atlas (free tier available) and set `MONGO_URI` to your Atlas connection string
-
-The application will automatically create the necessary collections on first use.
+If deploying to production or serverless platforms, you should replace the in-memory storage with a persistent database. The code structure makes it easy to swap the storage implementation.
 
 ## Important Design Decisions
 

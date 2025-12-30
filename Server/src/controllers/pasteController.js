@@ -1,4 +1,4 @@
-import Paste from '../models/Paste.js';
+import PasteStore from '../models/PasteStore.js';
 import { getNow } from '../utils/getNow.js';
 import { escapeHtml } from '../utils/escapeHtml.js';
 
@@ -8,22 +8,14 @@ export const viewPasteHtml = async (req, res) => {
         const now = getNow(req);
 
         // Atomic operation: find and update only if constraints are met
-        const paste = await Paste.findOneAndUpdate(
+        const paste = PasteStore.findByIdAndUpdate(
+            id,
             {
-                _id: id,
                 $and: [
                     {
                         $or: [
                             { expiresAt: null },
                             { expiresAt: { $gt: now } }
-                        ]
-                    },
-                    {
-                        $or: [
-                            { maxViews: null },
-                            {
-                                $expr: { $lt: ['$viewCount', '$maxViews'] }
-                            }
                         ]
                     }
                 ]

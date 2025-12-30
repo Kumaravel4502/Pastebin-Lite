@@ -1,6 +1,6 @@
 import express from 'express';
 import { nanoid } from 'nanoid';
-import Paste from '../models/Paste.js';
+import PasteStore from '../models/PasteStore.js';
 import { getNow } from '../utils/getNow.js';
 
 const router = express.Router();
@@ -28,9 +28,9 @@ router.post('/', async (req, res) => {
     }
 
     const id = nanoid(10);
-    const now = new Date();
+    const now = getNow(req);
 
-    const paste = new Paste({
+    const paste = PasteStore.create({
       _id: id,
       content: content,
       createdAt: now,
@@ -38,8 +38,6 @@ router.post('/', async (req, res) => {
       maxViews: max_views || null,
       viewCount: 0
     });
-
-    await paste.save();
 
     const baseUrl = process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`;
 
@@ -60,22 +58,14 @@ router.get('/:id', async (req, res) => {
     const now = getNow(req);
 
     // Atomic operation: find and update only if constraints are met
-    const paste = await Paste.findOneAndUpdate(
+    const paste = PasteStore.findByIdAndUpdate(
+      id,
       {
-        _id: id,
         $and: [
           {
             $or: [
               { expiresAt: null },
               { expiresAt: { $gt: now } }
-            ]
-          },
-          {
-            $or: [
-              { maxViews: null },
-              {
-                $expr: { $lt: ['$viewCount', '$maxViews'] }
-              }
             ]
           }
         ]
